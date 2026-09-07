@@ -62,6 +62,8 @@ src/
 
 Los módulos están preparados, pero sus operaciones de negocio se implementarán en las historias posteriores.
 
+La arquitectura, las direcciones de comunicación local y las integraciones previstas están documentadas en [`docs/architecture.md`](docs/architecture.md). También existe un [diagrama editable en FigJam](https://www.figma.com/board/JniN3acMMwkc28n4GDimNq).
+
 ## Validaciones
 
 ```powershell
@@ -82,6 +84,8 @@ El 7 de septiembre de 2026 se obtuvieron los siguientes resultados:
 - Servidor compilado ejecutado correctamente en el puerto 3000.
 - `GET /health` respondió `200` con el servicio en estado `ok` y PostgreSQL identificado como motor.
 - `GET /api/v1` publicó autenticación, catálogos, movimientos, auditoría y sincronización.
+- La consulta de `/health` desde el origen del panel `http://localhost:5173` respondió `200` con CORS autorizado.
+- La consulta equivalente de la aplicación móvil respondió con el servicio `sicaf-api` en estado `ok`.
 
 La conexión real a PostgreSQL queda pendiente de proporcionar las credenciales locales mediante `DATABASE_URL`; la ausencia de credenciales no impide iniciar ni comprobar la API.
 

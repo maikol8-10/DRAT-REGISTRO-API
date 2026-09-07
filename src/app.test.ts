@@ -16,6 +16,13 @@ describe('SICAF API', () => {
     expect(response.body.modules).toHaveLength(5);
   });
 
+  it('permite al panel web consultar la API mediante CORS', async () => {
+    const response = await request(app)
+      .get('/health')
+      .set('Origin', 'http://localhost:5173');
+    expect(response.headers['access-control-allow-origin']).toBe('http://localhost:5173');
+  });
+
   it('responde 404 para rutas inexistentes', async () => {
     const response = await request(app).get('/ruta-inexistente');
     expect(response.status).toBe(404);
