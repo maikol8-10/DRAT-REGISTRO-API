@@ -10,6 +10,14 @@ export const database = env.databaseUrl
     })
   : null;
 
+export function requireDatabase() {
+  if (!database) {
+    throw new Error('DATABASE_URL no está configurada');
+  }
+
+  return database;
+}
+
 export async function checkDatabase() {
   if (!database || !env.databaseCheckEnabled) {
     return {

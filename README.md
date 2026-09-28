@@ -60,7 +60,23 @@ src/
   server.ts        Arranque del servidor
 ```
 
-Los módulos están preparados, pero sus operaciones de negocio se implementarán en las historias posteriores.
+El módulo de usuarios y roles se encuentra en `src/modules/users`. Implementa los roles
+`ADMINISTRADOR` y `GUARDA`, protege las contraseñas con `scrypt` y restringe la administración
+de usuarios al rol administrador.
+
+## Usuarios y roles
+
+La estructura inicial se crea ejecutando `src/database/migrations/001-create-users.sql` en la
+base PostgreSQL configurada mediante `DATABASE_URL`.
+
+| Método | Ruta | Descripción | Acceso |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/users` | Lista usuarios sin exponer contraseñas | Administrador |
+| `POST` | `/api/v1/users` | Crea un usuario administrador o guarda | Administrador |
+| `PATCH` | `/api/v1/users/:id` | Edita, activa o desactiva un usuario | Administrador |
+
+Todas estas rutas requieren `Authorization: Bearer <token>`. La emisión del token se incorpora
+en la historia **Iniciar y cerrar sesión**. Ninguna respuesta del módulo incluye el hash de la contraseña.
 
 La arquitectura, las direcciones de comunicación local y las integraciones previstas están documentadas en [`docs/architecture.md`](docs/architecture.md). También existe un [diagrama editable en FigJam](https://www.figma.com/board/JniN3acMMwkc28n4GDimNq).
 
