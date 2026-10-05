@@ -5,7 +5,7 @@ import { env } from './env.js';
 export const database = env.databaseUrl
   ? new Sequelize(env.databaseUrl, {
       dialect: 'postgres',
-      logging: env.nodeEnv === 'development' ? console.debug : false,
+      logging: env.nodeEnv === 'development' ? (sql) => console.debug(sql) : false,
       define: { underscored: true, timestamps: true },
     })
   : null;

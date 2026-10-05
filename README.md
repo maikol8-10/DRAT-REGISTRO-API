@@ -76,7 +76,16 @@ base PostgreSQL configurada mediante `DATABASE_URL`.
 | `PATCH` | `/api/v1/users/:id` | Edita, activa o desactiva un usuario | Administrador |
 
 Todas estas rutas requieren `Authorization: Bearer <token>`. La emisión del token se incorpora
-en la historia **Iniciar y cerrar sesión**. Ninguna respuesta del módulo incluye el hash de la contraseña.
+mediante `POST /api/v1/auth/login`. Ninguna respuesta del módulo incluye el hash de la contraseña.
+
+Para crear el primer administrador, defina temporalmente `INITIAL_ADMIN_NAME`,
+`INITIAL_ADMIN_EMAIL` e `INITIAL_ADMIN_PASSWORD`, y ejecute:
+
+```powershell
+npm.cmd run seed:admin
+```
+
+Las variables del administrador inicial no deben guardarse en `.env` ni registrarse en Git.
 
 La arquitectura, las direcciones de comunicación local y las integraciones previstas están documentadas en [`docs/architecture.md`](docs/architecture.md). También existe un [diagrama editable en FigJam](https://www.figma.com/board/JniN3acMMwkc28n4GDimNq).
 
