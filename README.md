@@ -87,6 +87,18 @@ npm.cmd run seed:admin
 
 Las variables del administrador inicial no deben guardarse en `.env` ni registrarse en Git.
 
+## Catálogo de funcionarios
+
+La estructura se crea ejecutando `src/database/migrations/002-create-employees.sql` en PostgreSQL.
+
+| Método | Ruta | Descripción | Acceso |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/catalogs/employees` | Lista y busca funcionarios | Administrador y guarda |
+| `POST` | `/api/v1/catalogs/employees` | Registra un funcionario | Administrador |
+| `PATCH` | `/api/v1/catalogs/employees/:id` | Edita, activa o desactiva | Administrador |
+
+La búsqueda acepta `?search=` y consulta identificación, nombre y departamento.
+
 La arquitectura, las direcciones de comunicación local y las integraciones previstas están documentadas en [`docs/architecture.md`](docs/architecture.md). También existe un [diagrama editable en FigJam](https://www.figma.com/board/JniN3acMMwkc28n4GDimNq).
 
 ## Validaciones
