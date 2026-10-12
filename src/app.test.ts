@@ -44,4 +44,9 @@ describe('SICAF API', () => {
     expect(response.status).toBe(401);
     expect(response.body.error).toBe('No autorizado');
   });
+
+  it('protege el catálogo de vehículos institucionales', async () => {
+    const response = await request(app).get('/api/v1/catalogs/institutional-vehicles');
+    expect(response.status).toBe(401);
+  });
 });
