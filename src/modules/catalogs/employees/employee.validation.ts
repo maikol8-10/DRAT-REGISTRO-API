@@ -37,7 +37,9 @@ export function validateCreateEmployee(body: unknown): CreateEmployeeInput {
 export function validateUpdateEmployee(body: unknown): UpdateEmployeeInput {
   const value = body as Record<string, unknown>;
   const result: UpdateEmployeeInput = {};
-  if ('identification' in value) result.identification = identification(value.identification);
+  if ('identification' in value) {
+    throw new ApiError(400, 'La identificación del funcionario no se puede modificar');
+  }
   if ('name' in value) result.name = text(value.name, 'name');
   if ('department' in value) result.department = text(value.department, 'department', 2, 120);
   if ('position' in value) result.position = text(value.position, 'position', 2, 120);

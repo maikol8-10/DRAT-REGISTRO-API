@@ -27,4 +27,10 @@ describe('catálogo de funcionarios', () => {
   it('permite desactivar un funcionario', () => {
     expect(validateUpdateEmployee({ active: false })).toEqual({ active: false });
   });
+
+  it('impide modificar la identificación', () => {
+    expect(() => validateUpdateEmployee({ identification: '987654321' })).toThrow(
+      'La identificación del funcionario no se puede modificar',
+    );
+  });
 });

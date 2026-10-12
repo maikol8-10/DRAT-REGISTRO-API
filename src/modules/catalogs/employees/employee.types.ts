@@ -5,4 +5,4 @@ export type CreateEmployeeInput = {
   position: string;
 };
 
-export type UpdateEmployeeInput = Partial<CreateEmployeeInput> & { active?: boolean };
+export type UpdateEmployeeInput = Partial<Omit<CreateEmployeeInput, 'identification'>> & { active?: boolean };
