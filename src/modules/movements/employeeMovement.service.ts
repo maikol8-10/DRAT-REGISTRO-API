@@ -1,4 +1,4 @@
-import { Transaction } from 'sequelize';
+import { QueryTypes, Transaction } from 'sequelize';
 
 import { requireDatabase } from '../../config/database.js';
 import { ApiError } from '../../errors/ApiError.js';
@@ -17,7 +17,7 @@ type ResolutionResult = {
 type CreatedMovementResult = {
   id: string;
   employeeId: string;
-  nfcTagId: string;
+  nfcTagId: string | null;
   movementType: MovementType;
   source: MovementSource;
   confirmedByUserId: string;
@@ -35,6 +35,15 @@ async function resolve(code: string, transaction?: Transaction) {
   const lastMovement = await getEmployeeMovementModel().findOne({ where: { employeeId: employee.id }, order: [['occurredAt', 'DESC']], transaction });
   const proposedMovement: MovementType = lastMovement?.movementType === 'INGRESO' ? 'SALIDA' : 'INGRESO';
   return { tag, employee, lastMovement, proposedMovement };
+}
+
+async function resolveEmployee(employeeId: string, transaction?: Transaction) {
+  const employee = await getEmployeeModel().findByPk(employeeId, { transaction, lock: transaction?.LOCK.UPDATE });
+  if (!employee) throw new ApiError(404, 'Funcionario no encontrado');
+  if (!employee.active) throw new ApiError(409, 'El funcionario está inactivo y no puede generar movimientos');
+  const lastMovement = await getEmployeeMovementModel().findOne({ where: { employeeId }, order: [['occurredAt', 'DESC']], transaction });
+  const proposedMovement: MovementType = lastMovement?.movementType === 'INGRESO' ? 'SALIDA' : 'INGRESO';
+  return { employee, lastMovement, proposedMovement };
 }
 
 export async function resolveNfcMovement(code: string): Promise<ResolutionResult> {
@@ -63,4 +72,35 @@ export async function createNfcMovement(input: { code: string; movementType: Mov
       employee: { id: employee.id, identification: employee.identification, name: employee.name },
     };
   });
+}
+
+export async function resolveManualMovement(employeeId: string): Promise<Omit<ResolutionResult, 'tag'>> {
+  const { employee, lastMovement, proposedMovement } = await resolveEmployee(employeeId);
+  return {
+    employee: { id: employee.id, identification: employee.identification, name: employee.name, department: employee.department, position: employee.position, active: employee.active },
+    proposedMovement,
+    lastMovement: lastMovement ? { id: lastMovement.id, movementType: lastMovement.movementType, occurredAt: lastMovement.occurredAt } : null,
+  };
+}
+
+export async function createManualMovement(input: { employeeId: string; movementType: MovementType; confirmedByUserId: string }): Promise<CreatedMovementResult> {
+  return requireDatabase().transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE }, async (transaction) => {
+    const { employee, proposedMovement } = await resolveEmployee(input.employeeId, transaction);
+    if (input.movementType !== proposedMovement) throw new ApiError(409, `El movimiento válido propuesto es ${proposedMovement}`);
+    const movement = await getEmployeeMovementModel().create({ employeeId: employee.id, nfcTagId: null, movementType: proposedMovement, source: 'BUSQUEDA_MANUAL', confirmedByUserId: input.confirmedByUserId }, { transaction });
+    return { id: movement.id, employeeId: movement.employeeId, nfcTagId: null, movementType: movement.movementType, source: movement.source, confirmedByUserId: movement.confirmedByUserId, occurredAt: movement.occurredAt, employee: { id: employee.id, identification: employee.identification, name: employee.name } };
+  });
+}
+
+export async function getCurrentPresenceCount(): Promise<number> {
+  const rows = await requireDatabase().query<{ count: string }>(`
+    SELECT COUNT(*)::text AS count
+    FROM (
+      SELECT DISTINCT ON (employee_id) movement_type
+      FROM employee_movements
+      ORDER BY employee_id, occurred_at DESC, created_at DESC
+    ) latest
+    WHERE movement_type = 'INGRESO'
+  `, { type: QueryTypes.SELECT });
+  return Number(rows[0]?.count ?? 0);
 }

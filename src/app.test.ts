@@ -61,4 +61,10 @@ describe('SICAF API', () => {
     expect(resolution.status).toBe(401);
     expect(creation.status).toBe(401);
   });
+
+  it('protege los movimientos manuales y la consulta de aforo', async () => {
+    expect((await request(app).post('/api/v1/movements/employees/manual/resolve')).status).toBe(401);
+    expect((await request(app).post('/api/v1/movements/employees/manual')).status).toBe(401);
+    expect((await request(app).get('/api/v1/movements/employees/presence/count')).status).toBe(401);
+  });
 });

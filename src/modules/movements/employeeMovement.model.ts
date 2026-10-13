@@ -3,12 +3,12 @@ import { DataTypes, Model, type CreationOptional, type InferAttributes, type Inf
 import { requireDatabase } from '../../config/database.js';
 
 export type MovementType = 'INGRESO' | 'SALIDA';
-export type MovementSource = 'NFC_SIMULADO' | 'NFC_FISICO';
+export type MovementSource = 'NFC_SIMULADO' | 'NFC_FISICO' | 'BUSQUEDA_MANUAL';
 
 export class EmployeeMovement extends Model<InferAttributes<EmployeeMovement>, InferCreationAttributes<EmployeeMovement>> {
   declare id: CreationOptional<string>;
   declare employeeId: string;
-  declare nfcTagId: string;
+  declare nfcTagId: string | null;
   declare movementType: MovementType;
   declare source: MovementSource;
   declare confirmedByUserId: string;
@@ -23,7 +23,7 @@ export function getEmployeeMovementModel() {
     EmployeeMovement.init({
       id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
       employeeId: { type: DataTypes.UUID, allowNull: false, field: 'employee_id' },
-      nfcTagId: { type: DataTypes.UUID, allowNull: false, field: 'nfc_tag_id' },
+      nfcTagId: { type: DataTypes.UUID, allowNull: true, field: 'nfc_tag_id' },
       movementType: { type: DataTypes.STRING(10), allowNull: false, field: 'movement_type' },
       source: { type: DataTypes.STRING(20), allowNull: false },
       confirmedByUserId: { type: DataTypes.UUID, allowNull: false, field: 'confirmed_by_user_id' },

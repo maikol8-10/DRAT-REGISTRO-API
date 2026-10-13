@@ -134,6 +134,12 @@ La migración `src/database/migrations/005-create-nfc-employee-movements.sql` cr
 - TAG desconocidos, inactivos, duplicados o asociados a funcionarios inactivos son rechazados.
 - `NFC_SIMULADO` queda separado de `NFC_FISICO` para conservar evidencia del origen.
 
+## Movimientos peatonales y aforo
+
+La migración `src/database/migrations/006-enable-manual-employee-movements.sql` habilita el origen `BUSQUEDA_MANUAL`. El guarda puede buscar un funcionario activo, consultar el movimiento válido propuesto y confirmarlo o cancelarlo. Cada movimiento conserva persona, tipo, fecha/hora y usuario operador.
+
+`GET /api/v1/movements/employees/presence/count` calcula el aforo tomando el último movimiento de cada funcionario: únicamente quienes tengan `INGRESO` como último movimiento se consideran dentro del plantel.
+
 La arquitectura, las direcciones de comunicación local y las integraciones previstas están documentadas en [`docs/architecture.md`](docs/architecture.md). También existe un [diagrama editable en FigJam](https://www.figma.com/board/JniN3acMMwkc28n4GDimNq).
 
 ## Validaciones
