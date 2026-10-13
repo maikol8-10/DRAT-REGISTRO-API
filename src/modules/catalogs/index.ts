@@ -9,6 +9,8 @@ import { createInstitutionalVehicle, listInstitutionalVehicles, updateInstitutio
 import { validateCreateInstitutionalVehicle, validateUpdateInstitutionalVehicle } from './institutional-vehicles/institutionalVehicle.validation.js';
 import { createPrivateVehicle, listPrivateVehicles, updatePrivateVehicle } from './private-vehicles/privateVehicle.service.js';
 import { validateCreatePrivateVehicle, validateUpdatePrivateVehicle } from './private-vehicles/privateVehicle.validation.js';
+import { createNfcTag, listNfcTags, updateNfcTag } from './nfc-tags/nfcTag.service.js';
+import { validateCreateNfcTag, validateUpdateNfcTag } from './nfc-tags/nfcTag.validation.js';
 
 export const catalogsModule = { key: 'catalogs', status: 'in_progress' } as const;
 export const catalogsRouter = Router();
@@ -87,5 +89,21 @@ catalogsRouter.patch('/private-vehicles/:id', authorize('ADMINISTRADOR'), async 
     const id = req.params.id;
     if (typeof id !== 'string') throw new ApiError(400, 'Identificador de vehículo inválido');
     res.json({ data: await updatePrivateVehicle(id, validateUpdatePrivateVehicle(req.body)) });
+  } catch (error) { next(error); }
+});
+
+catalogsRouter.get('/nfc-tags', authorize('ADMINISTRADOR'), async (_req, res, next) => {
+  try { res.json({ data: await listNfcTags() }); } catch (error) { next(error); }
+});
+
+catalogsRouter.post('/nfc-tags', authorize('ADMINISTRADOR'), async (req, res, next) => {
+  try { res.status(201).json({ data: await createNfcTag(validateCreateNfcTag(req.body)) }); } catch (error) { next(error); }
+});
+
+catalogsRouter.patch('/nfc-tags/:id', authorize('ADMINISTRADOR'), async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (typeof id !== 'string') throw new ApiError(400, 'Identificador de TAG inválido');
+    res.json({ data: await updateNfcTag(id, validateUpdateNfcTag(req.body)) });
   } catch (error) { next(error); }
 });

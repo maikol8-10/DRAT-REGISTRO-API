@@ -4,6 +4,7 @@ import { moduleRegistry } from '../modules/index.js';
 import { authRouter } from '../modules/auth/index.js';
 import { catalogsRouter } from '../modules/catalogs/index.js';
 import { usersRouter } from '../modules/users/index.js';
+import { movementsRouter } from '../modules/movements/index.js';
 
 export const apiRouter = Router();
 
@@ -18,3 +19,4 @@ apiRouter.get('/', (_req, res) => {
 apiRouter.use('/users', usersRouter);
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/catalogs', catalogsRouter);
+apiRouter.use('/movements', movementsRouter);

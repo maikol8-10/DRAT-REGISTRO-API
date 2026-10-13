@@ -123,6 +123,17 @@ La migración `src/database/migrations/004-create-private-vehicles.sql` crea el 
 
 Un funcionario puede ser propietario habitual de varios vehículos. No se permiten asociaciones nuevas ni reactivaciones cuando el propietario está inactivo. Cada reasignación cierra el periodo anterior y crea una fila en `private_vehicle_owner_history`, sin sobrescribir el historial. Los movimientos futuros deberán conservar su referencia original y rechazar vehículos o funcionarios inactivos.
 
+## Movimientos de funcionarios mediante NFC
+
+La migración `src/database/migrations/005-create-nfc-employee-movements.sql` crea los TAG asociados y los movimientos de ingreso/salida.
+
+- Administración gestiona TAG mediante `/api/v1/catalogs/nfc-tags`.
+- Guarda y administrador resuelven un código mediante `POST /api/v1/movements/employees/nfc/resolve`.
+- El movimiento solo se crea después de confirmarlo mediante `POST /api/v1/movements/employees/nfc`.
+- El servidor propone `INGRESO` si no existe un movimiento anterior o el último fue una salida; en caso contrario propone `SALIDA`.
+- TAG desconocidos, inactivos, duplicados o asociados a funcionarios inactivos son rechazados.
+- `NFC_SIMULADO` queda separado de `NFC_FISICO` para conservar evidencia del origen.
+
 La arquitectura, las direcciones de comunicación local y las integraciones previstas están documentadas en [`docs/architecture.md`](docs/architecture.md). También existe un [diagrama editable en FigJam](https://www.figma.com/board/JniN3acMMwkc28n4GDimNq).
 
 ## Validaciones

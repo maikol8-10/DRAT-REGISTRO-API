@@ -54,4 +54,11 @@ describe('SICAF API', () => {
     const response = await request(app).get('/api/v1/catalogs/private-vehicles');
     expect(response.status).toBe(401);
   });
+
+  it('protege la resolución y creación de movimientos NFC', async () => {
+    const resolution = await request(app).post('/api/v1/movements/employees/nfc/resolve').send({ code: 'TAG-001' });
+    const creation = await request(app).post('/api/v1/movements/employees/nfc').send({ code: 'TAG-001', movementType: 'INGRESO', source: 'NFC_SIMULADO' });
+    expect(resolution.status).toBe(401);
+    expect(creation.status).toBe(401);
+  });
 });
