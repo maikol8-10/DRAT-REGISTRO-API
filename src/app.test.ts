@@ -49,4 +49,9 @@ describe('SICAF API', () => {
     const response = await request(app).get('/api/v1/catalogs/institutional-vehicles');
     expect(response.status).toBe(401);
   });
+
+  it('protege el catálogo de vehículos particulares', async () => {
+    const response = await request(app).get('/api/v1/catalogs/private-vehicles');
+    expect(response.status).toBe(401);
+  });
 });

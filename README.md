@@ -111,6 +111,18 @@ La estructura se crea ejecutando `src/database/migrations/003-create-institution
 
 La placa y el código patrimonial son únicos. El registro conserva el tipo `INSTITUCIONAL` para distinguirlo de vehículos particulares o de visita. La placa no puede modificarse después del registro. Los vehículos inactivos permanecen disponibles para historial, pero deberán rechazarse en cualquier movimiento nuevo.
 
+## Vehículos particulares de funcionarios
+
+La migración `src/database/migrations/004-create-private-vehicles.sql` crea el catálogo y el historial de propietarios habituales.
+
+| Método | Ruta | Descripción | Acceso |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/catalogs/private-vehicles` | Lista y busca por vehículo o propietario | Administrador y guarda |
+| `POST` | `/api/v1/catalogs/private-vehicles` | Asocia una placa a un funcionario activo | Administrador |
+| `PATCH` | `/api/v1/catalogs/private-vehicles/:id` | Edita, reasigna, activa o desactiva | Administrador |
+
+Un funcionario puede ser propietario habitual de varios vehículos. No se permiten asociaciones nuevas ni reactivaciones cuando el propietario está inactivo. Cada reasignación cierra el periodo anterior y crea una fila en `private_vehicle_owner_history`, sin sobrescribir el historial. Los movimientos futuros deberán conservar su referencia original y rechazar vehículos o funcionarios inactivos.
+
 La arquitectura, las direcciones de comunicación local y las integraciones previstas están documentadas en [`docs/architecture.md`](docs/architecture.md). También existe un [diagrama editable en FigJam](https://www.figma.com/board/JniN3acMMwkc28n4GDimNq).
 
 ## Validaciones
