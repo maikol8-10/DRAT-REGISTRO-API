@@ -8,7 +8,7 @@ export class PrivateVehicleMovement extends Model<InferAttributes<PrivateVehicle
   declare vehicleId: string;
   declare driverEmployeeId: string;
   declare movementType: MovementType;
-  declare source: 'PLACA_MANUAL' | 'OCR';
+  declare source: 'PLACA_MANUAL' | 'OCR' | 'CONTINGENCIA';
   declare confirmedByUserId: string;
   declare occurredAt: CreationOptional<Date>;
   declare createdAt: CreationOptional<Date>;

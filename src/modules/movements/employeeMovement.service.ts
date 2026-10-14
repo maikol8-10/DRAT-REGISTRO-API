@@ -60,7 +60,7 @@ export async function resolveNfcMovement(code: string): Promise<ResolutionResult
 export async function createNfcMovement(input: { code: string; movementType: MovementType; source: MovementSource; confirmedByUserId: string }): Promise<CreatedMovementResult> {
   return requireDatabase().transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE }, async (transaction) => {
     const { tag, employee, proposedMovement } = await resolve(input.code, transaction);
-    if (input.movementType !== proposedMovement) throw new ApiError(409, `El movimiento válido propuesto es ${proposedMovement}`);
+    if (input.movementType !== proposedMovement) throw new ApiError(409, `El funcionario ya figura ${proposedMovement === 'SALIDA' ? 'dentro' : 'fuera'}; no puede registrar otro ${input.movementType.toLowerCase()} normal`, { code: 'MOVEMENT_INCONSISTENCY', entityType: 'FUNCIONARIO', entityId: employee.id, requestedMovement: input.movementType, authorizedRoute: 'Un administrador puede registrar una contingencia con motivo obligatorio' });
     const movement = await getEmployeeMovementModel().create({ employeeId: employee.id, nfcTagId: tag.id, movementType: proposedMovement, source: input.source, confirmedByUserId: input.confirmedByUserId }, { transaction });
     return {
       id: movement.id,
@@ -87,7 +87,7 @@ export async function resolveManualMovement(employeeId: string): Promise<Omit<Re
 export async function createManualMovement(input: { employeeId: string; movementType: MovementType; confirmedByUserId: string }): Promise<CreatedMovementResult> {
   return requireDatabase().transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE }, async (transaction) => {
     const { employee, proposedMovement } = await resolveEmployee(input.employeeId, transaction);
-    if (input.movementType !== proposedMovement) throw new ApiError(409, `El movimiento válido propuesto es ${proposedMovement}`);
+    if (input.movementType !== proposedMovement) throw new ApiError(409, `El funcionario ya figura ${proposedMovement === 'SALIDA' ? 'dentro' : 'fuera'}; no puede registrar otro ${input.movementType.toLowerCase()} normal`, { code: 'MOVEMENT_INCONSISTENCY', entityType: 'FUNCIONARIO', entityId: employee.id, requestedMovement: input.movementType, authorizedRoute: 'Un administrador puede registrar una contingencia con motivo obligatorio' });
     const movement = await getEmployeeMovementModel().create({ employeeId: employee.id, nfcTagId: null, movementType: proposedMovement, source: 'BUSQUEDA_MANUAL', confirmedByUserId: input.confirmedByUserId }, { transaction });
     return { id: movement.id, employeeId: movement.employeeId, nfcTagId: null, movementType: movement.movementType, source: movement.source, confirmedByUserId: movement.confirmedByUserId, occurredAt: movement.occurredAt, employee: { id: employee.id, identification: employee.identification, name: employee.name } };
   });

@@ -52,7 +52,7 @@ export async function createPrivateVehicleMovement(input: { plate: string; drive
 }> {
   return requireDatabase().transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE }, async (transaction) => {
     const { vehicle, proposedMovement } = await resolveVehicle(input.plate, transaction);
-    if (input.movementType !== proposedMovement) throw new ApiError(409, `El movimiento válido propuesto es ${proposedMovement}`);
+    if (input.movementType !== proposedMovement) throw new ApiError(409, `El vehículo ya figura ${proposedMovement === 'SALIDA' ? 'dentro' : 'fuera'}; no puede registrar otro ${input.movementType.toLowerCase()} normal`, { code: 'MOVEMENT_INCONSISTENCY', entityType: 'VEHICULO_PARTICULAR', entityId: vehicle.id, requestedMovement: input.movementType, authorizedRoute: 'Un administrador puede registrar una contingencia con motivo obligatorio' });
     const occupantIds = [...new Set(input.occupantEmployeeIds)];
     if (occupantIds.includes(input.driverEmployeeId)) throw new ApiError(409, 'El conductor no puede registrarse también como acompañante');
     const personIds = [input.driverEmployeeId, ...occupantIds];
