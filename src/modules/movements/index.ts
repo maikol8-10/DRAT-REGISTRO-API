@@ -9,6 +9,7 @@ import { createPrivateVehicleMovement, resolvePrivateVehicleMovement } from './p
 import { createInstitutionalDeparture, createInstitutionalReturn, listInstitutionalTrips, resolveInstitutionalDeparture, resolveInstitutionalReturn } from './institutionalVehicleTrip.service.js';
 import { createMovementContingency, type ContingencyEntity } from './movementContingency.service.js';
 import { listActiveVisitorVisits, registerVisitorEntry, registerVisitorExit } from './visitorVisit.service.js';
+import { listMovementHistory, validateHistoryFilters } from './movementHistory.service.js';
 
 export const movementsModule = { key: 'movements', status: 'in_progress' } as const;
 export const movementsRouter = Router();
@@ -55,6 +56,10 @@ movementsRouter.get('/employees/presence/count', async (_req, res, next) => {
 
 movementsRouter.get('/presence/emergency', async (_req, res, next) => {
   try { res.json({ data: await getEmergencyPresence() }); } catch (error) { next(error); }
+});
+
+movementsRouter.get('/history', authorize('ADMINISTRADOR'), async (req, res, next) => {
+  try { res.json({ data: await listMovementHistory(validateHistoryFilters(req.query)) }); } catch (error) { next(error); }
 });
 
 movementsRouter.post('/visitors/entry', async (req, res, next) => {

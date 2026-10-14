@@ -74,4 +74,8 @@ describe('SICAF API', () => {
     expect((await request(app).get('/api/v1/movements/visitors/active')).status).toBe(401);
     expect((await request(app).post('/api/v1/movements/visitors/00000000-0000-0000-0000-000000000000/exit')).status).toBe(401);
   });
+
+  it('protege el historial de auditoría de movimientos', async () => {
+    expect((await request(app).get('/api/v1/movements/history')).status).toBe(401);
+  });
 });
