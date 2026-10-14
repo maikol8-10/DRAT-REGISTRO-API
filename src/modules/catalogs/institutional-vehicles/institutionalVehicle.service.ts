@@ -21,7 +21,7 @@ export async function createInstitutionalVehicle(input: CreateInstitutionalVehic
   try {
     return await getInstitutionalVehicleModel().create(input);
   } catch (error) {
-    if (error instanceof UniqueConstraintError) throw new ApiError(409, 'Ya existe un vehículo con esa placa o código patrimonial');
+    if (error instanceof UniqueConstraintError) throw new ApiError(409, 'Ya existe un vehículo con esa placa o número de activo');
     throw error;
   }
 }
@@ -33,7 +33,7 @@ export async function updateInstitutionalVehicle(id: string, input: UpdateInstit
     await vehicle.update(input);
     return vehicle;
   } catch (error) {
-    if (error instanceof UniqueConstraintError) throw new ApiError(409, 'Ya existe un vehículo con ese código patrimonial');
+    if (error instanceof UniqueConstraintError) throw new ApiError(409, 'Ya existe un vehículo con ese número de activo');
     throw error;
   }
 }

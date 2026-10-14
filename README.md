@@ -109,7 +109,7 @@ La estructura se crea ejecutando `src/database/migrations/003-create-institution
 | `POST` | `/api/v1/catalogs/institutional-vehicles` | Registra un vehículo institucional | Administrador |
 | `PATCH` | `/api/v1/catalogs/institutional-vehicles/:id` | Edita, activa o desactiva | Administrador |
 
-La placa y el código patrimonial son únicos. El registro conserva el tipo `INSTITUCIONAL` para distinguirlo de vehículos particulares o de visita. La placa no puede modificarse después del registro. Los vehículos inactivos permanecen disponibles para historial, pero deberán rechazarse en cualquier movimiento nuevo.
+La placa y el número de activo son únicos. El registro conserva el tipo `INSTITUCIONAL` para distinguirlo de vehículos particulares o de visita. La placa no puede modificarse después del registro. Los vehículos inactivos permanecen disponibles para historial, pero deberán rechazarse en cualquier movimiento nuevo.
 
 ## Vehículos particulares de funcionarios
 

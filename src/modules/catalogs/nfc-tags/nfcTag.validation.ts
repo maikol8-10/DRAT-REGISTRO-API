@@ -2,7 +2,10 @@ import { ApiError } from '../../../errors/ApiError.js';
 
 function code(value: unknown) {
   if (typeof value !== 'string') throw new ApiError(400, 'Código NFC requerido');
-  const normalized = value.trim().replace(/\s+/g, '').toUpperCase();
+  const compact = value.trim().replace(/\s+/g, '').toUpperCase();
+  const normalized = /^(?:[0-9A-F]{2}[:-]){3,9}[0-9A-F]{2}$/.test(compact)
+    ? compact.replace(/[:-]/g, '')
+    : compact;
   if (normalized.length < 4 || normalized.length > 80 || !/^[A-Z0-9:_-]+$/.test(normalized)) {
     throw new ApiError(400, 'Código NFC inválido');
   }
