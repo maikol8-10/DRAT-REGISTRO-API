@@ -8,8 +8,14 @@ export function validateCreateDepartment(body: unknown) {
 }
 
 export function validateUpdateDepartment(body: unknown) {
-  if (!body || typeof body !== 'object' || typeof (body as { active?: unknown }).active !== 'boolean') {
-    throw new ApiError(400, 'El estado del departamento debe ser verdadero o falso');
+  if (!body || typeof body !== 'object') throw new ApiError(400, 'Datos del departamento inválidos');
+  const value = body as { name?: unknown; active?: unknown };
+  const result: { name?: string; active?: boolean } = {};
+  if ('name' in value) result.name = validateCreateDepartment({ name: value.name }).name;
+  if ('active' in value) {
+    if (typeof value.active !== 'boolean') throw new ApiError(400, 'El estado del departamento debe ser verdadero o falso');
+    result.active = value.active;
   }
-  return { active: (body as { active: boolean }).active };
+  if (result.name === undefined && result.active === undefined) throw new ApiError(400, 'No se indicaron cambios para el departamento');
+  return result;
 }

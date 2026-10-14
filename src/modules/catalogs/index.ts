@@ -11,7 +11,7 @@ import { createPrivateVehicle, listPrivateVehicles, updatePrivateVehicle } from 
 import { validateCreatePrivateVehicle, validateUpdatePrivateVehicle } from './private-vehicles/privateVehicle.validation.js';
 import { createNfcTag, deleteNfcTag, listNfcTags, updateNfcTag } from './nfc-tags/nfcTag.service.js';
 import { validateCreateNfcTag, validateUpdateNfcTag } from './nfc-tags/nfcTag.validation.js';
-import { createDepartment, listDepartments, updateDepartment } from './departments/department.service.js';
+import { createDepartment, deleteDepartment, listDepartments, updateDepartment } from './departments/department.service.js';
 import { validateCreateDepartment, validateUpdateDepartment } from './departments/department.validation.js';
 
 export const catalogsModule = { key: 'catalogs', status: 'in_progress' } as const;
@@ -32,6 +32,15 @@ catalogsRouter.patch('/departments/:id', authorize('ADMINISTRADOR'), async (req,
     const id = req.params.id;
     if (typeof id !== 'string') throw new ApiError(400, 'Identificador de departamento inválido');
     res.json({ data: await updateDepartment(id, validateUpdateDepartment(req.body)) });
+  } catch (error) { next(error); }
+});
+
+catalogsRouter.delete('/departments/:id', authorize('ADMINISTRADOR'), async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (typeof id !== 'string') throw new ApiError(400, 'Identificador de departamento inválido');
+    await deleteDepartment(id);
+    res.status(204).send();
   } catch (error) { next(error); }
 });
 

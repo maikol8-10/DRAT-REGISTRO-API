@@ -11,4 +11,9 @@ describe('catálogo de departamentos', () => {
     expect(validateUpdateDepartment({ active: false })).toEqual({ active: false });
     expect(() => validateUpdateDepartment({ active: 'no' })).toThrow();
   });
+
+  it('permite renombrar y rechaza actualizaciones vacías', () => {
+    expect(validateUpdateDepartment({ name: '  Gestión   Técnica ' })).toEqual({ name: 'Gestión Técnica' });
+    expect(() => validateUpdateDepartment({})).toThrow();
+  });
 });
