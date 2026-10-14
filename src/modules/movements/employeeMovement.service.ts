@@ -94,14 +94,34 @@ export async function createManualMovement(input: { employeeId: string; movement
 }
 
 export async function getCurrentPresenceCount(): Promise<number> {
-  const rows = await requireDatabase().query<{ count: string }>(`
-    SELECT COUNT(*)::text AS count
-    FROM (
-      SELECT DISTINCT ON (employee_id) movement_type
+  return (await getEmergencyPresence()).length;
+}
+
+export type EmergencyPresenceRecord = {
+  id: string;
+  kind: 'FUNCIONARIO' | 'VISITANTE';
+  name: string;
+  identification: string;
+  detail: string;
+  enteredAt: Date;
+};
+
+export async function getEmergencyPresence(): Promise<EmergencyPresenceRecord[]> {
+  return requireDatabase().query<EmergencyPresenceRecord>(`
+    WITH latest_employee AS (
+      SELECT DISTINCT ON (employee_id) employee_id, movement_type, occurred_at
       FROM employee_movements
       ORDER BY employee_id, occurred_at DESC, created_at DESC
-    ) latest
-    WHERE movement_type = 'INGRESO'
+    )
+    SELECT e.id::text AS id, 'FUNCIONARIO' AS kind, e.name, e.identification,
+           CONCAT(e.department, ' · ', e.position) AS detail, le.occurred_at AS "enteredAt"
+    FROM latest_employee le JOIN employees e ON e.id = le.employee_id
+    WHERE le.movement_type = 'INGRESO'
+    UNION ALL
+    SELECT vv.id::text AS id, 'VISITANTE' AS kind, v.name, v.identification,
+           CONCAT('Gafete ', vv.badge_code, ' · ', vv.reason) AS detail, vv.entry_at AS "enteredAt"
+    FROM visitor_visits vv JOIN visitors v ON v.id = vv.visitor_id
+    WHERE vv.exit_at IS NULL
+    ORDER BY "enteredAt" DESC
   `, { type: QueryTypes.SELECT });
-  return Number(rows[0]?.count ?? 0);
 }

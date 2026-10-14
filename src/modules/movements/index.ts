@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { ApiError } from '../../errors/ApiError.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { authorize } from '../../middleware/authorize.js';
-import { createManualMovement, createNfcMovement, getCurrentPresenceCount, resolveManualMovement, resolveNfcMovement } from './employeeMovement.service.js';
+import { createManualMovement, createNfcMovement, getCurrentPresenceCount, getEmergencyPresence, resolveManualMovement, resolveNfcMovement } from './employeeMovement.service.js';
 import type { MovementSource, MovementType } from './employeeMovement.model.js';
 import { createPrivateVehicleMovement, resolvePrivateVehicleMovement } from './privateVehicleMovement.service.js';
 import { createInstitutionalDeparture, createInstitutionalReturn, listInstitutionalTrips, resolveInstitutionalDeparture, resolveInstitutionalReturn } from './institutionalVehicleTrip.service.js';
@@ -51,6 +51,10 @@ movementsRouter.post('/employees/manual', async (req, res, next) => {
 
 movementsRouter.get('/employees/presence/count', async (_req, res, next) => {
   try { res.json({ data: { count: await getCurrentPresenceCount() } }); } catch (error) { next(error); }
+});
+
+movementsRouter.get('/presence/emergency', async (_req, res, next) => {
+  try { res.json({ data: await getEmergencyPresence() }); } catch (error) { next(error); }
 });
 
 movementsRouter.post('/visitors/entry', async (req, res, next) => {
