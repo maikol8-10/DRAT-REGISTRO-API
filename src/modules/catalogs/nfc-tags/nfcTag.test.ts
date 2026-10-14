@@ -18,4 +18,8 @@ describe('catálogo de TAG NFC', () => {
   it('impide modificar el código del TAG', () => {
     expect(() => validateUpdateNfcTag({ code: 'TAG-002' })).toThrow('El código del TAG NFC no se puede modificar');
   });
+
+  it('permite liberar la asignación sin alterar el identificador', () => {
+    expect(validateUpdateNfcTag({ employeeId: null })).toEqual({ employeeId: null });
+  });
 });

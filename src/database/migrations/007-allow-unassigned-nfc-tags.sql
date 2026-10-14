@@ -1,0 +1,1 @@
+ALTER TABLE nfc_tags ALTER COLUMN employee_id DROP NOT NULL;

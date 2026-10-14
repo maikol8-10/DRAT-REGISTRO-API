@@ -1,6 +1,7 @@
 import { UniqueConstraintError } from 'sequelize';
 
 import { ApiError } from '../../../errors/ApiError.js';
+import { getEmployeeMovementModel } from '../../movements/employeeMovement.model.js';
 import { getEmployeeModel } from '../employees/employee.model.js';
 import { getNfcTagModel, type NfcTag } from './nfcTag.model.js';
 
@@ -12,7 +13,9 @@ async function requireActiveEmployee(id: string) {
 }
 
 async function withEmployee(tag: NfcTag) {
-  const employee = await getEmployeeModel().findByPk(tag.employeeId, { attributes: ['id', 'identification', 'name', 'department', 'position', 'active'] });
+  const employee = tag.employeeId
+    ? await getEmployeeModel().findByPk(tag.employeeId, { attributes: ['id', 'identification', 'name', 'department', 'position', 'active'] })
+    : null;
   return { ...tag.toJSON(), employee };
 }
 
@@ -30,14 +33,27 @@ export async function createNfcTag(input: { code: string; employeeId: string }) 
   }
 }
 
-export async function updateNfcTag(id: string, input: { employeeId?: string; active?: boolean }) {
+export async function updateNfcTag(id: string, input: { employeeId?: string | null; active?: boolean }) {
   const tag = await getNfcTagModel().findByPk(id);
   if (!tag) throw new ApiError(404, 'TAG NFC no encontrado');
-  const employeeId = input.employeeId ?? tag.employeeId;
-  if (input.employeeId || input.active === true) await requireActiveEmployee(employeeId);
-  try { await tag.update(input); return withEmployee(tag); }
+  const employeeId = input.employeeId === undefined ? tag.employeeId : input.employeeId;
+  if ((input.employeeId !== undefined && input.employeeId !== null) || input.active === true) {
+    if (!employeeId) throw new ApiError(409, 'No se puede activar un TAG sin funcionario asociado');
+    await requireActiveEmployee(employeeId);
+  }
+  const update = input.employeeId === null ? { ...input, active: false } : input;
+  try { await tag.update(update); return withEmployee(tag); }
   catch (error) {
     if (error instanceof UniqueConstraintError) throw new ApiError(409, 'El funcionario ya tiene un TAG asociado');
     throw error;
   }
+}
+
+export async function deleteNfcTag(id: string) {
+  const tag = await getNfcTagModel().findByPk(id);
+  if (!tag) throw new ApiError(404, 'TAG NFC no encontrado');
+  if (tag.employeeId) throw new ApiError(409, 'No se puede eliminar el TAG porque tiene un funcionario asignado');
+  const movementCount = await getEmployeeMovementModel().count({ where: { nfcTagId: id } });
+  if (movementCount > 0) throw new ApiError(409, 'No se puede eliminar el TAG porque posee movimientos históricos');
+  await tag.destroy();
 }

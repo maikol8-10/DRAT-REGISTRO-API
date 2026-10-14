@@ -29,6 +29,7 @@ async function resolve(code: string, transaction?: Transaction) {
   const tag = await getNfcTagModel().findOne({ where: { code: normalizeNfcCode(code) }, transaction, lock: transaction?.LOCK.UPDATE });
   if (!tag) throw new ApiError(404, 'TAG NFC desconocido');
   if (!tag.active) throw new ApiError(409, 'El TAG NFC está inactivo');
+  if (!tag.employeeId) throw new ApiError(409, 'El TAG no tiene un funcionario asociado');
   const employee = await getEmployeeModel().findByPk(tag.employeeId, { transaction });
   if (!employee) throw new ApiError(404, 'El TAG no tiene un funcionario asociado');
   if (!employee.active) throw new ApiError(409, 'El funcionario asociado está inactivo');

@@ -24,9 +24,9 @@ export function validateCreateNfcTag(body: unknown) {
 
 export function validateUpdateNfcTag(body: unknown) {
   const value = body as Record<string, unknown>;
-  const result: { employeeId?: string; active?: boolean } = {};
+  const result: { employeeId?: string | null; active?: boolean } = {};
   if ('code' in value) throw new ApiError(400, 'El código del TAG NFC no se puede modificar');
-  if ('employeeId' in value) result.employeeId = employeeId(value.employeeId);
+  if ('employeeId' in value) result.employeeId = value.employeeId === null ? null : employeeId(value.employeeId);
   if ('active' in value) {
     if (typeof value.active !== 'boolean') throw new ApiError(400, 'El estado del TAG es inválido');
     result.active = value.active;
