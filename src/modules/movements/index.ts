@@ -5,6 +5,7 @@ import { authenticate } from '../../middleware/authenticate.js';
 import { authorize } from '../../middleware/authorize.js';
 import { createManualMovement, createNfcMovement, getCurrentPresenceCount, resolveManualMovement, resolveNfcMovement } from './employeeMovement.service.js';
 import type { MovementSource, MovementType } from './employeeMovement.model.js';
+import { createPrivateVehicleMovement, resolvePrivateVehicleMovement } from './privateVehicleMovement.service.js';
 
 export const movementsModule = { key: 'movements', status: 'in_progress' } as const;
 export const movementsRouter = Router();
@@ -47,4 +48,23 @@ movementsRouter.post('/employees/manual', async (req, res, next) => {
 
 movementsRouter.get('/employees/presence/count', async (_req, res, next) => {
   try { res.json({ data: { count: await getCurrentPresenceCount() } }); } catch (error) { next(error); }
+});
+
+movementsRouter.post('/private-vehicles/resolve', async (req, res, next) => {
+  try {
+    if (typeof req.body?.plate !== 'string') throw new ApiError(400, 'Placa requerida');
+    res.json({ data: await resolvePrivateVehicleMovement(req.body.plate) });
+  } catch (error) { next(error); }
+});
+
+movementsRouter.post('/private-vehicles', async (req, res, next) => {
+  try {
+    const auth = typeof req.auth === 'object' ? req.auth : undefined;
+    if (typeof auth?.sub !== 'string') throw new ApiError(401, 'No autorizado');
+    if (typeof req.body?.plate !== 'string' || typeof req.body?.driverEmployeeId !== 'string') throw new ApiError(400, 'Placa y conductor requeridos');
+    if (!Array.isArray(req.body?.occupantEmployeeIds) || !req.body.occupantEmployeeIds.every((id: unknown) => typeof id === 'string')) throw new ApiError(400, 'La lista de acompañantes es inválida');
+    if (!['INGRESO', 'SALIDA'].includes(req.body?.movementType)) throw new ApiError(400, 'Tipo de movimiento inválido');
+    if (!['PLACA_MANUAL', 'OCR'].includes(req.body?.source)) throw new ApiError(400, 'Origen de placa inválido');
+    res.status(201).json({ data: await createPrivateVehicleMovement({ plate: req.body.plate, driverEmployeeId: req.body.driverEmployeeId, occupantEmployeeIds: req.body.occupantEmployeeIds, movementType: req.body.movementType as MovementType, source: req.body.source, confirmedByUserId: auth.sub }) });
+  } catch (error) { next(error); }
 });

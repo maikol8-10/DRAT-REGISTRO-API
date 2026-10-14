@@ -3,7 +3,7 @@ import { DataTypes, Model, type CreationOptional, type InferAttributes, type Inf
 import { requireDatabase } from '../../config/database.js';
 
 export type MovementType = 'INGRESO' | 'SALIDA';
-export type MovementSource = 'NFC_SIMULADO' | 'NFC_FISICO' | 'BUSQUEDA_MANUAL';
+export type MovementSource = 'NFC_SIMULADO' | 'NFC_FISICO' | 'BUSQUEDA_MANUAL' | 'VEHICULO_PARTICULAR';
 
 export class EmployeeMovement extends Model<InferAttributes<EmployeeMovement>, InferCreationAttributes<EmployeeMovement>> {
   declare id: CreationOptional<string>;
