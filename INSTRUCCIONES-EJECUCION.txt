@@ -1,0 +1,57 @@
+SICAF - INSTRUCCIONES PARA EJECUTAR LA API
+===========================================
+
+Requisitos:
+- Node.js 22.13 o superior.
+- PostgreSQL instalado y en ejecución.
+- Git (si se obtiene el proyecto mediante clone).
+
+1. Abrir PowerShell en el repositorio:
+
+   cd C:\ruta\donde\descargo\DRAT-REGISTRO-API
+
+2. Instalar dependencias:
+
+   npm.cmd install
+
+3. Crear la configuración local:
+
+   Copy-Item .env.example .env
+
+4. Editar .env y configurar DATABASE_URL, JWT_SECRET y CORS_ORIGIN.
+   Ejemplo de desarrollo:
+
+   DATABASE_URL=postgres://sicaf:sicaf@localhost:5432/sicaf
+   JWT_SECRET=reemplace-este-valor-con-un-secreto-seguro
+   CORS_ORIGIN=http://localhost:5173
+
+5. Crear previamente en PostgreSQL la base y el usuario indicados en DATABASE_URL.
+
+6. Ejecutar las migraciones en orden. Reemplace los datos de conexión si usa otros:
+
+   Get-ChildItem .\src\database\migrations\*.sql | Sort-Object Name | ForEach-Object { psql.exe -U sicaf -d sicaf -f $_.FullName }
+
+7. Crear el primer administrador (solo la primera vez):
+
+   $env:INITIAL_ADMIN_NAME="Administrador"
+   $env:INITIAL_ADMIN_EMAIL="admin@sicaf.local"
+   $env:INITIAL_ADMIN_PASSWORD="CambieEstaClave"
+   npm.cmd run seed:admin
+
+8. Iniciar la API:
+
+   npm.cmd run dev
+
+9. Comprobar en el navegador:
+
+   http://localhost:3000/health
+
+Para detenerla, presione Ctrl+C.
+
+Validaciones opcionales:
+
+   npm.cmd run lint
+   npm.cmd test
+   npm.cmd run build
+
+IMPORTANTE: no suba el archivo .env ni contraseñas reales al repositorio.
