@@ -8,6 +8,7 @@ import type { MovementSource, MovementType } from './employeeMovement.model.js';
 import { createPrivateVehicleMovement, resolvePrivateVehicleMovement } from './privateVehicleMovement.service.js';
 import { createInstitutionalDeparture, createInstitutionalReturn, listInstitutionalTrips, resolveInstitutionalDeparture, resolveInstitutionalReturn } from './institutionalVehicleTrip.service.js';
 import { createMovementContingency, type ContingencyEntity } from './movementContingency.service.js';
+import { listActiveVisitorVisits, registerVisitorEntry, registerVisitorExit } from './visitorVisit.service.js';
 
 export const movementsModule = { key: 'movements', status: 'in_progress' } as const;
 export const movementsRouter = Router();
@@ -52,6 +53,26 @@ movementsRouter.get('/employees/presence/count', async (_req, res, next) => {
   try { res.json({ data: { count: await getCurrentPresenceCount() } }); } catch (error) { next(error); }
 });
 
+movementsRouter.post('/visitors/entry', async (req, res, next) => {
+  try {
+    const auth = typeof req.auth === 'object' ? req.auth : undefined;
+    if (typeof auth?.sub !== 'string') throw new ApiError(401, 'No autorizado');
+    res.status(201).json({ data: await registerVisitorEntry({ ...req.body, userId: auth.sub }) });
+  } catch (error) { next(error); }
+});
+
+movementsRouter.get('/visitors/active', async (req, res, next) => {
+  try { res.json({ data: await listActiveVisitorVisits(typeof req.query.search === 'string' ? req.query.search : '') }); } catch (error) { next(error); }
+});
+
+movementsRouter.post('/visitors/:id/exit', async (req, res, next) => {
+  try {
+    const auth = typeof req.auth === 'object' ? req.auth : undefined;
+    if (typeof auth?.sub !== 'string') throw new ApiError(401, 'No autorizado');
+    res.json({ data: await registerVisitorExit(req.params.id, auth.sub) });
+  } catch (error) { next(error); }
+});
+
 movementsRouter.post('/private-vehicles/resolve', async (req, res, next) => {
   try {
     if (typeof req.body?.plate !== 'string') throw new ApiError(400, 'Placa requerida');
@@ -63,11 +84,14 @@ movementsRouter.post('/private-vehicles', async (req, res, next) => {
   try {
     const auth = typeof req.auth === 'object' ? req.auth : undefined;
     if (typeof auth?.sub !== 'string') throw new ApiError(401, 'No autorizado');
-    if (typeof req.body?.plate !== 'string' || typeof req.body?.driverEmployeeId !== 'string') throw new ApiError(400, 'Placa y conductor requeridos');
+    if (typeof req.body?.plate !== 'string') throw new ApiError(400, 'Placa requerida');
+    const employeeDriver = typeof req.body?.driverEmployeeId === 'string';
+    const visitorDriver = typeof req.body?.driverVisitorVisitId === 'string';
+    if (employeeDriver === visitorDriver) throw new ApiError(400, 'Debe indicar exactamente un conductor funcionario o visitante');
     if (!Array.isArray(req.body?.occupantEmployeeIds) || !req.body.occupantEmployeeIds.every((id: unknown) => typeof id === 'string')) throw new ApiError(400, 'La lista de acompañantes es inválida');
     if (!['INGRESO', 'SALIDA'].includes(req.body?.movementType)) throw new ApiError(400, 'Tipo de movimiento inválido');
     if (!['PLACA_MANUAL', 'OCR'].includes(req.body?.source)) throw new ApiError(400, 'Origen de placa inválido');
-    res.status(201).json({ data: await createPrivateVehicleMovement({ plate: req.body.plate, driverEmployeeId: req.body.driverEmployeeId, occupantEmployeeIds: req.body.occupantEmployeeIds, movementType: req.body.movementType as MovementType, source: req.body.source, confirmedByUserId: auth.sub }) });
+    res.status(201).json({ data: await createPrivateVehicleMovement({ plate: req.body.plate, driverEmployeeId: employeeDriver ? req.body.driverEmployeeId : undefined, driverVisitorVisitId: visitorDriver ? req.body.driverVisitorVisitId : undefined, ownerAuthorizationConfirmed: req.body.ownerAuthorizationConfirmed, authorizationNote: req.body.authorizationNote, occupantEmployeeIds: req.body.occupantEmployeeIds, movementType: req.body.movementType as MovementType, source: req.body.source, confirmedByUserId: auth.sub }) });
   } catch (error) { next(error); }
 });
 

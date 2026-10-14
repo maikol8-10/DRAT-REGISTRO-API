@@ -6,7 +6,10 @@ import type { MovementType } from './employeeMovement.model.js';
 export class PrivateVehicleMovement extends Model<InferAttributes<PrivateVehicleMovement>, InferCreationAttributes<PrivateVehicleMovement>> {
   declare id: CreationOptional<string>;
   declare vehicleId: string;
-  declare driverEmployeeId: string;
+  declare driverEmployeeId: string | null;
+  declare driverVisitorVisitId: string | null;
+  declare ownerAuthorizationConfirmed: boolean;
+  declare authorizationNote: string | null;
   declare movementType: MovementType;
   declare source: 'PLACA_MANUAL' | 'OCR' | 'CONTINGENCIA';
   declare confirmedByUserId: string;
@@ -21,7 +24,10 @@ export function getPrivateVehicleMovementModel() {
     PrivateVehicleMovement.init({
       id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
       vehicleId: { type: DataTypes.UUID, allowNull: false, field: 'vehicle_id' },
-      driverEmployeeId: { type: DataTypes.UUID, allowNull: false, field: 'driver_employee_id' },
+      driverEmployeeId: { type: DataTypes.UUID, allowNull: true, field: 'driver_employee_id' },
+      driverVisitorVisitId: { type: DataTypes.UUID, allowNull: true, field: 'driver_visitor_visit_id' },
+      ownerAuthorizationConfirmed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false, field: 'owner_authorization_confirmed' },
+      authorizationNote: { type: DataTypes.STRING(500), allowNull: true, field: 'authorization_note' },
       movementType: { type: DataTypes.STRING(10), allowNull: false, field: 'movement_type' },
       source: { type: DataTypes.STRING(20), allowNull: false },
       confirmedByUserId: { type: DataTypes.UUID, allowNull: false, field: 'confirmed_by_user_id' },
