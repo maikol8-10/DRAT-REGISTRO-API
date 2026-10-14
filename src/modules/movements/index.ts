@@ -6,6 +6,7 @@ import { authorize } from '../../middleware/authorize.js';
 import { createManualMovement, createNfcMovement, getCurrentPresenceCount, resolveManualMovement, resolveNfcMovement } from './employeeMovement.service.js';
 import type { MovementSource, MovementType } from './employeeMovement.model.js';
 import { createPrivateVehicleMovement, resolvePrivateVehicleMovement } from './privateVehicleMovement.service.js';
+import { createInstitutionalDeparture, createInstitutionalReturn, listInstitutionalTrips, resolveInstitutionalDeparture, resolveInstitutionalReturn } from './institutionalVehicleTrip.service.js';
 
 export const movementsModule = { key: 'movements', status: 'in_progress' } as const;
 export const movementsRouter = Router();
@@ -67,4 +68,24 @@ movementsRouter.post('/private-vehicles', async (req, res, next) => {
     if (!['PLACA_MANUAL', 'OCR'].includes(req.body?.source)) throw new ApiError(400, 'Origen de placa inválido');
     res.status(201).json({ data: await createPrivateVehicleMovement({ plate: req.body.plate, driverEmployeeId: req.body.driverEmployeeId, occupantEmployeeIds: req.body.occupantEmployeeIds, movementType: req.body.movementType as MovementType, source: req.body.source, confirmedByUserId: auth.sub }) });
   } catch (error) { next(error); }
+});
+
+movementsRouter.post('/institutional-vehicles/departure/resolve', async (req, res, next) => {
+  try { if (typeof req.body?.plate !== 'string') throw new ApiError(400, 'Placa requerida'); res.json({ data: await resolveInstitutionalDeparture(req.body.plate) }); } catch (error) { next(error); }
+});
+movementsRouter.post('/institutional-vehicles/departure', async (req, res, next) => {
+  try {
+    const auth = typeof req.auth === 'object' ? req.auth : undefined; if (typeof auth?.sub !== 'string') throw new ApiError(401, 'No autorizado');
+    if (typeof req.body?.plate !== 'string' || typeof req.body?.soinNumber !== 'string' || typeof req.body?.driverEmployeeId !== 'string' || typeof req.body?.destination !== 'string' || !Array.isArray(req.body?.occupantEmployeeIds)) throw new ApiError(400, 'Datos de salida incompletos');
+    res.status(201).json({ data: await createInstitutionalDeparture({ ...req.body, userId: auth.sub }) });
+  } catch (error) { next(error); }
+});
+movementsRouter.post('/institutional-vehicles/return/resolve', async (req, res, next) => {
+  try { if (typeof req.body?.soinNumber !== 'string') throw new ApiError(400, 'Boleta SOIN requerida'); res.json({ data: await resolveInstitutionalReturn(req.body.soinNumber) }); } catch (error) { next(error); }
+});
+movementsRouter.post('/institutional-vehicles/return', async (req, res, next) => {
+  try { const auth = typeof req.auth === 'object' ? req.auth : undefined; if (typeof auth?.sub !== 'string') throw new ApiError(401, 'No autorizado'); if (typeof req.body?.soinNumber !== 'string') throw new ApiError(400, 'Boleta SOIN requerida'); res.status(201).json({ data: await createInstitutionalReturn({ soinNumber: req.body.soinNumber, mileage: req.body.mileage, fuel: req.body.fuel, userId: auth.sub }) }); } catch (error) { next(error); }
+});
+movementsRouter.get('/institutional-vehicles/history', async (_req, res, next) => {
+  try { res.json({ data: await listInstitutionalTrips() }); } catch (error) { next(error); }
 });
