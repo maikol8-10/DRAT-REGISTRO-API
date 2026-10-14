@@ -11,11 +11,29 @@ import { createPrivateVehicle, listPrivateVehicles, updatePrivateVehicle } from 
 import { validateCreatePrivateVehicle, validateUpdatePrivateVehicle } from './private-vehicles/privateVehicle.validation.js';
 import { createNfcTag, deleteNfcTag, listNfcTags, updateNfcTag } from './nfc-tags/nfcTag.service.js';
 import { validateCreateNfcTag, validateUpdateNfcTag } from './nfc-tags/nfcTag.validation.js';
+import { createDepartment, listDepartments, updateDepartment } from './departments/department.service.js';
+import { validateCreateDepartment, validateUpdateDepartment } from './departments/department.validation.js';
 
 export const catalogsModule = { key: 'catalogs', status: 'in_progress' } as const;
 export const catalogsRouter = Router();
 
 catalogsRouter.use(authenticate);
+
+catalogsRouter.get('/departments', authorize('ADMINISTRADOR', 'GUARDA'), async (_req, res, next) => {
+  try { res.json({ data: await listDepartments() }); } catch (error) { next(error); }
+});
+
+catalogsRouter.post('/departments', authorize('ADMINISTRADOR'), async (req, res, next) => {
+  try { res.status(201).json({ data: await createDepartment(validateCreateDepartment(req.body)) }); } catch (error) { next(error); }
+});
+
+catalogsRouter.patch('/departments/:id', authorize('ADMINISTRADOR'), async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (typeof id !== 'string') throw new ApiError(400, 'Identificador de departamento inválido');
+    res.json({ data: await updateDepartment(id, validateUpdateDepartment(req.body)) });
+  } catch (error) { next(error); }
+});
 
 catalogsRouter.get('/employees', authorize('ADMINISTRADOR', 'GUARDA'), async (req, res, next) => {
   try {
